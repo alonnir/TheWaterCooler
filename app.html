@@ -21,11 +21,31 @@
     <main class="main-content">
       <section class="news-header">
         <h2>Most Talked-About Stories</h2>
-        <div class="controls">
+        <div class="controls controls-top">
           <label>Top stories <input id="top-count" type="number" min="1" max="25" value="12" /></label>
           <label>Lookback (hours) <input id="lookback-hours" type="number" min="1" max="120" value="36" /></label>
+          <label>
+            Tone
+            <select id="tone-select">
+              <option value="neutral">Neutral</option>
+              <option value="optimistic">Optimistic</option>
+              <option value="serious">Serious</option>
+            </select>
+          </label>
           <button id="refresh-btn" class="btn-refresh" type="button">Refresh</button>
         </div>
+
+        <div class="controls controls-grid">
+          <div>
+            <h3>Categories</h3>
+            <div id="category-filters" class="option-grid"></div>
+          </div>
+          <div>
+            <h3>Sources</h3>
+            <div id="source-filters" class="option-grid"></div>
+          </div>
+        </div>
+
         <div id="last-update" class="last-update"></div>
       </section>
 

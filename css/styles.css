@@ -83,7 +83,7 @@ body {
 }
 
 .nav-content {
-  width: min(1100px, 94vw);
+  width: min(1120px, 94vw);
   margin: 0 auto;
   padding: 14px 0;
   display: flex;
@@ -123,16 +123,13 @@ body {
 }
 
 .main-content {
-  width: min(1100px, 94vw);
+  width: min(1120px, 94vw);
   margin: 26px auto 30px;
 }
 
 .news-header {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: 12px;
-  justify-content: space-between;
-  align-items: end;
   margin-bottom: 16px;
 }
 
@@ -147,24 +144,61 @@ body {
   flex-wrap: wrap;
 }
 
-.controls label {
+.controls-top label {
   display: grid;
   font-size: 0.82rem;
   color: #4b5563;
   gap: 3px;
 }
 
-.controls input {
+.controls input,
+.controls select {
   width: 120px;
   border: 1px solid rgba(15, 118, 110, 0.22);
   border-radius: 10px;
   padding: 8px;
+  background: #fff;
 }
 
 .btn-refresh {
   background: #0f766e;
   color: #fff;
   padding: 9px 14px;
+}
+
+.controls-grid {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: 12px;
+  padding: 10px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+}
+
+.controls-grid h3 {
+  margin: 2px 0 8px;
+  font-size: 0.88rem;
+  color: #0f766e;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.option-grid {
+  display: grid;
+  gap: 6px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #374151;
+  font-size: 0.88rem;
+}
+
+.option input {
+  width: auto;
 }
 
 .last-update {
@@ -247,6 +281,21 @@ body {
   color: #4b5563;
 }
 
+.score-toggle {
+  margin-top: 10px;
+  color: #0f766e;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.score-panel {
+  margin-top: 8px;
+  font-size: 0.83rem;
+  color: #4b5563;
+  border-left: 3px solid rgba(15, 118, 110, 0.25);
+  padding-left: 8px;
+}
+
 .news-meta {
   margin-top: 8px;
   color: #6b7280;
@@ -259,6 +308,12 @@ body {
   border: 1px solid rgba(15, 118, 110, 0.2);
   border-radius: 12px;
   padding: 18px;
+}
+
+@media (max-width: 900px) {
+  .controls-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 700px) {
@@ -277,11 +332,12 @@ body {
     flex-direction: column;
   }
 
-  .controls {
+  .controls-top {
     width: 100%;
   }
 
-  .controls input {
+  .controls-top input,
+  .controls-top select {
     width: 100%;
   }
 }
