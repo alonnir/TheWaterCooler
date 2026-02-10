@@ -129,10 +129,10 @@ function renderPreferenceControls() {
   lookbackInput.value = String(state.prefs.lookbackHours);
   toneSelect.value = state.prefs.tone;
 
-  categoryFilters.innerHTML = categoryOrder.map((category) => {
+  categoryFilters.innerHTML = [`<button type="button" class="category-btn ${allCategoriesEnabled() ? "active" : ""}" data-role="category" data-value="all">all</button>`, ...categoryOrder.map((category) => {
     const active = state.prefs.enabledCategories.includes(category) ? "active" : "";
     return `<button type="button" class="category-btn ${active}" data-role="category" data-value="${escapeHtml(category)}">${escapeHtml(category)}</button>`;
-  }).join("");
+  })].join("");
 
   sourceFilters.innerHTML = feeds.map((feed) => {
     const checked = state.prefs.enabledFeedIds.includes(feed.id) ? "checked" : "";
@@ -180,27 +180,26 @@ function attachHandlers() {
 
   settingsToggle.onclick = () => {
     settingsPanel.hidden = !settingsPanel.hidden;
+    settingsToggle.textContent = settingsPanel.hidden ? "Settings" : "Close Settings";
   };
 
   categoryFilters.onclick = (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement) || target.dataset.role !== "category") {
+    const rawTarget = event.target;
+    if (!(rawTarget instanceof Element)) {
+      return;
+    }
+    const target = rawTarget.closest("[data-role='category']");
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
     const category = target.dataset.value || "";
-    const next = new Set(state.prefs.enabledCategories);
-    if (next.has(category)) {
-      next.delete(category);
+    if (category === "all") {
+      state.prefs.enabledCategories = [...categoryOrder];
     } else {
-      next.add(category);
+      state.prefs.enabledCategories = [category];
     }
 
-    if (next.size === 0) {
-      return;
-    }
-
-    state.prefs.enabledCategories = [...next];
     renderPreferenceControls();
     scheduleSavePreferences();
     applyCurrentView();
@@ -297,6 +296,13 @@ function applyCurrentView() {
 
 function buildSourceSignature(enabledFeedIds) {
   return [...enabledFeedIds].sort().join(",");
+}
+
+function allCategoriesEnabled() {
+  if (state.prefs.enabledCategories.length !== categoryOrder.length) {
+    return false;
+  }
+  return categoryOrder.every((category) => state.prefs.enabledCategories.includes(category));
 }
 
 async function getCachedNews(lookbackHours, sourceSignature) {
