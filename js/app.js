@@ -324,8 +324,9 @@ function applyCurrentView() {
     return;
   }
 
+  const normalizedTopics = (state.lastPayload.topics || []).map((topic) => normalizeTopic(topic));
   const hasCategoryFilters = state.prefs.enabledCategories.length > 0;
-  const filtered = state.lastPayload.topics
+  const filtered = normalizedTopics
     .filter((topic) => {
       if (!hasCategoryFilters) {
         return !state.prefs.mutedTopicIds.includes(topic.id);
@@ -573,7 +574,7 @@ function renderTopics(topics) {
           </div>
           <div class="related-panel" data-role="related-panel" data-topic-id="${escapeHtml(topic.id)}" hidden>
             <ul class="related-list">
-              ${(topic.relatedStories || []).map((story) => `<li><a href="${escapeHtml(story.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(story.title)}</a> <span class="related-source">(${escapeHtml(story.source)})</span></li>`).join("")}
+              ${(topic.relatedStories || []).map((story) => `<li>${story.link ? `<a href="${escapeHtml(story.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(story.title)}</a>` : `${escapeHtml(story.title)}`} <span class="related-source">(${escapeHtml(story.source)})</span></li>`).join("")}
             </ul>
           </div>
           <details class="score-toggle">
@@ -605,6 +606,22 @@ function makeTopicId(title, link) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 120);
+}
+
+function normalizeTopic(topic) {
+  const normalized = { ...topic };
+  normalized.id = normalized.id || makeTopicId(normalized.title, normalized.link);
+  if (!Array.isArray(normalized.categories)) {
+    normalized.categories = [];
+  }
+  if (!Array.isArray(normalized.relatedStories) || normalized.relatedStories.length === 0) {
+    normalized.relatedStories = [{
+      title: normalized.title || "Primary story",
+      link: normalized.link || "",
+      source: Array.isArray(normalized.sourceNames) && normalized.sourceNames[0] ? normalized.sourceNames[0] : "Unknown",
+    }];
+  }
+  return normalized;
 }
 
 function timeAgo(timestamp) {
