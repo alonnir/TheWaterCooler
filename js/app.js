@@ -130,8 +130,8 @@ function renderPreferenceControls() {
   toneSelect.value = state.prefs.tone;
 
   categoryFilters.innerHTML = categoryOrder.map((category) => {
-    const checked = state.prefs.enabledCategories.includes(category) ? "checked" : "";
-    return `<label class="option"><input type="checkbox" data-role="category" data-value="${escapeHtml(category)}" ${checked}>${escapeHtml(category)}</label>`;
+    const active = state.prefs.enabledCategories.includes(category) ? "active" : "";
+    return `<button type="button" class="category-btn ${active}" data-role="category" data-value="${escapeHtml(category)}">${escapeHtml(category)}</button>`;
   }).join("");
 
   sourceFilters.innerHTML = feeds.map((feed) => {
@@ -146,6 +146,8 @@ function attachHandlers() {
   const topInput = document.getElementById("top-count");
   const lookbackInput = document.getElementById("lookback-hours");
   const toneSelect = document.getElementById("tone-select");
+  const settingsToggle = document.getElementById("settings-toggle");
+  const settingsPanel = document.getElementById("settings-panel");
   const categoryFilters = document.getElementById("category-filters");
   const sourceFilters = document.getElementById("source-filters");
 
@@ -176,26 +178,30 @@ function attachHandlers() {
     applyCurrentView();
   };
 
-  categoryFilters.onchange = (event) => {
+  settingsToggle.onclick = () => {
+    settingsPanel.hidden = !settingsPanel.hidden;
+  };
+
+  categoryFilters.onclick = (event) => {
     const target = event.target;
-    if (!(target instanceof HTMLInputElement) || target.dataset.role !== "category") {
+    if (!(target instanceof HTMLElement) || target.dataset.role !== "category") {
       return;
     }
 
     const category = target.dataset.value || "";
     const next = new Set(state.prefs.enabledCategories);
-    if (target.checked) {
-      next.add(category);
-    } else {
+    if (next.has(category)) {
       next.delete(category);
+    } else {
+      next.add(category);
     }
 
     if (next.size === 0) {
-      target.checked = true;
       return;
     }
 
     state.prefs.enabledCategories = [...next];
+    renderPreferenceControls();
     scheduleSavePreferences();
     applyCurrentView();
   };

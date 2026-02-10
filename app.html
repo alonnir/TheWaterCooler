@@ -32,14 +32,16 @@
               <option value="serious">Serious</option>
             </select>
           </label>
+          <button id="settings-toggle" class="btn-refresh btn-ghost" type="button">Settings</button>
           <button id="refresh-btn" class="btn-refresh" type="button">Refresh</button>
         </div>
 
-        <div class="controls controls-grid">
-          <div>
-            <h3>Categories</h3>
-            <div id="category-filters" class="option-grid"></div>
-          </div>
+        <div class="controls controls-categories">
+          <h3>Categories</h3>
+          <div id="category-filters" class="category-buttons"></div>
+        </div>
+
+        <div id="settings-panel" class="controls controls-grid" hidden>
           <div>
             <h3>Sources</h3>
             <div id="source-filters" class="option-grid"></div>
