@@ -13,9 +13,5 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Optional: set your NewsAPI key here to enable NewsAPI sources.
-const newsApiKey = "";
-
 window.auth = auth;
 window.db = db;
-window.newsApiKey = newsApiKey;
