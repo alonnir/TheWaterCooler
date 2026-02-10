@@ -239,6 +239,23 @@ function attachHandlers() {
     if (!(rawTarget instanceof Element)) {
       return;
     }
+    const digButton = rawTarget.closest("[data-role='dig-topic']");
+    if (digButton instanceof HTMLElement) {
+      const topicId = digButton.dataset.topicId || "";
+      const panel = document.querySelector(`[data-role='related-panel'][data-topic-id='${cssEscape(topicId)}']`);
+      if (panel instanceof HTMLElement) {
+        const isHidden = panel.hasAttribute("hidden");
+        if (isHidden) {
+          panel.removeAttribute("hidden");
+          digButton.textContent = "Hide details";
+        } else {
+          panel.setAttribute("hidden", "");
+          digButton.textContent = "Dig deeper";
+        }
+      }
+      return;
+    }
+
     const muteButton = rawTarget.closest("[data-role='mute-topic']");
     if (!(muteButton instanceof HTMLElement)) {
       return;
@@ -551,13 +568,13 @@ function renderTopics(topics) {
           <p class="news-description">Why it's hot: ${topic.mentions} related headlines across ${topic.sources} sources.</p>
           <p class="news-prompt">Prompt: ${escapeHtml(topic.prompt)}</p>
           <div class="story-actions">
-            <details class="dig-deeper">
-              <summary>Dig deeper</summary>
-              <ul class="related-list">
-                ${(topic.relatedStories || []).map((story) => `<li><a href="${escapeHtml(story.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(story.title)}</a> <span class="related-source">(${escapeHtml(story.source)})</span></li>`).join("")}
-              </ul>
-            </details>
+            <button type="button" class="dig-btn" data-role="dig-topic" data-topic-id="${escapeHtml(topic.id)}">Dig deeper</button>
             <button type="button" class="mute-btn" data-role="mute-topic" data-topic-id="${escapeHtml(topic.id)}">Mute</button>
+          </div>
+          <div class="related-panel" data-role="related-panel" data-topic-id="${escapeHtml(topic.id)}" hidden>
+            <ul class="related-list">
+              ${(topic.relatedStories || []).map((story) => `<li><a href="${escapeHtml(story.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(story.title)}</a> <span class="related-source">(${escapeHtml(story.source)})</span></li>`).join("")}
+            </ul>
           </div>
           <details class="score-toggle">
             <summary>Why trending (score ${topic.score})</summary>
@@ -610,4 +627,8 @@ function escapeHtml(input) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function cssEscape(input) {
+  return String(input || "").replace(/["\\]/g, "\\$&");
 }

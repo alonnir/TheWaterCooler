@@ -333,14 +333,22 @@ body {
   flex-wrap: wrap;
 }
 
-.dig-deeper {
-  font-size: 0.85rem;
+.dig-btn {
+  border: 1px solid rgba(15, 118, 110, 0.28);
+  background: rgba(236, 253, 245, 0.8);
   color: #0f766e;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
 }
 
-.dig-deeper summary {
-  cursor: pointer;
-  user-select: none;
+.dig-btn:hover {
+  background: rgba(209, 250, 229, 0.9);
+}
+
+.related-panel {
+  margin-top: 8px;
 }
 
 .related-list {
