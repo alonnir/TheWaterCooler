@@ -27,7 +27,7 @@ const state = {
     topCount: 12,
     lookbackHours: 36,
     tone: "neutral",
-    enabledCategories: [...categoryOrder],
+    enabledCategories: [],
     enabledFeedIds: feeds.map((feed) => feed.id),
   },
 };
@@ -72,9 +72,6 @@ async function loadUserPreferences(userId) {
     const prefs = doc.data()?.preferences;
     if (!prefs) return;
 
-    const enabledCategories = Array.isArray(prefs.enabledCategories)
-      ? prefs.enabledCategories.filter((c) => categoryOrder.includes(c))
-      : state.prefs.enabledCategories;
     const enabledFeedIds = Array.isArray(prefs.enabledFeedIds)
       ? prefs.enabledFeedIds.filter((id) => feeds.some((feed) => feed.id === id))
       : state.prefs.enabledFeedIds;
@@ -84,7 +81,8 @@ async function loadUserPreferences(userId) {
       topCount: clamp(parseInt(prefs.topCount, 10), 1, 25),
       lookbackHours: clamp(parseInt(prefs.lookbackHours, 10), 1, 120),
       tone: ["neutral", "optimistic", "serious"].includes(prefs.tone) ? prefs.tone : "neutral",
-      enabledCategories: enabledCategories.length > 0 ? enabledCategories : [...categoryOrder],
+      // Categories default to "all off" on each load; toggles are session-level.
+      enabledCategories: [],
       enabledFeedIds: enabledFeedIds.length > 0 ? enabledFeedIds : feeds.map((feed) => feed.id),
     };
   } catch (error) {
@@ -105,7 +103,6 @@ function scheduleSavePreferences() {
             topCount: state.prefs.topCount,
             lookbackHours: state.prefs.lookbackHours,
             tone: state.prefs.tone,
-            enabledCategories: state.prefs.enabledCategories,
             enabledFeedIds: state.prefs.enabledFeedIds,
           },
           preferencesUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -129,10 +126,10 @@ function renderPreferenceControls() {
   lookbackInput.value = String(state.prefs.lookbackHours);
   toneSelect.value = state.prefs.tone;
 
-  categoryFilters.innerHTML = [`<button type="button" class="category-btn ${allCategoriesEnabled() ? "active" : ""}" data-role="category" data-value="all">all</button>`, ...categoryOrder.map((category) => {
+  categoryFilters.innerHTML = categoryOrder.map((category) => {
     const active = state.prefs.enabledCategories.includes(category) ? "active" : "";
     return `<button type="button" class="category-btn ${active}" data-role="category" data-value="${escapeHtml(category)}">${escapeHtml(category)}</button>`;
-  })].join("");
+  }).join("");
 
   sourceFilters.innerHTML = feeds.map((feed) => {
     const checked = state.prefs.enabledFeedIds.includes(feed.id) ? "checked" : "";
@@ -194,14 +191,15 @@ function attachHandlers() {
     }
 
     const category = target.dataset.value || "";
-    if (category === "all") {
-      state.prefs.enabledCategories = [...categoryOrder];
+    const next = new Set(state.prefs.enabledCategories);
+    if (next.has(category)) {
+      next.delete(category);
     } else {
-      state.prefs.enabledCategories = [category];
+      next.add(category);
     }
 
+    state.prefs.enabledCategories = [...next];
     renderPreferenceControls();
-    scheduleSavePreferences();
     applyCurrentView();
   };
 
@@ -282,8 +280,14 @@ function applyCurrentView() {
     return;
   }
 
+  const hasCategoryFilters = state.prefs.enabledCategories.length > 0;
   const filtered = state.lastPayload.topics
-    .filter((topic) => topic.categories.some((category) => state.prefs.enabledCategories.includes(category)))
+    .filter((topic) => {
+      if (!hasCategoryFilters) {
+        return true;
+      }
+      return topic.categories.some((category) => state.prefs.enabledCategories.includes(category));
+    })
     .slice(0, state.prefs.topCount)
     .map((topic) => ({
       ...topic,
@@ -296,13 +300,6 @@ function applyCurrentView() {
 
 function buildSourceSignature(enabledFeedIds) {
   return [...enabledFeedIds].sort().join(",");
-}
-
-function allCategoriesEnabled() {
-  if (state.prefs.enabledCategories.length !== categoryOrder.length) {
-    return false;
-  }
-  return categoryOrder.every((category) => state.prefs.enabledCategories.includes(category));
 }
 
 async function getCachedNews(lookbackHours, sourceSignature) {
