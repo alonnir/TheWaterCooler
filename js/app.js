@@ -8,8 +8,8 @@ const stopwords = new Set([
 ]);
 
 const feeds = [
-  { id: "world", category: "news", label: "BBC World", url: "https://feeds.bbci.co.uk/news/world/rss.xml" },
-  { id: "us", category: "news", label: "BBC US", url: "https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml" },
+  { id: "news-top", category: "news", label: "Google Top News", url: "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en" },
+  { id: "news-us", category: "news", label: "Google US News", url: "https://news.google.com/rss/headlines/section/geo/US?hl=en-US&gl=US&ceid=US:en" },
   { id: "politics", category: "politics", label: "Google Politics", url: "https://news.google.com/rss/search?q=US+politics&hl=en-US&gl=US&ceid=US:en" },
   { id: "tv", category: "tv", label: "Google TV", url: "https://news.google.com/rss/search?q=television+streaming+series&hl=en-US&gl=US&ceid=US:en" },
   { id: "sports", category: "sports", label: "Google Sports", url: "https://news.google.com/rss/headlines/section/topic/SPORTS?hl=en-US&gl=US&ceid=US:en" },
