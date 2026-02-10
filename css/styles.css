@@ -1,0 +1,287 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #eef8f5 0%, #f5f9ff 60%, #e9f2ee 100%);
+  color: #1f2937;
+}
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-card {
+  width: min(460px, 95vw);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 18px;
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.12);
+  padding: 32px;
+}
+
+.login-card h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  color: #0f766e;
+}
+
+.login-card p {
+  margin: 12px 0 22px;
+  color: #4b5563;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-refresh {
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.btn-primary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(31, 41, 55, 0.2);
+  padding: 12px 16px;
+}
+
+.btn-primary:hover {
+  border-color: #0f766e;
+}
+
+.error-message {
+  margin-top: 12px;
+  color: #b91c1c;
+  background: rgba(254, 226, 226, 0.7);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.9rem;
+}
+
+.error-message:empty {
+  display: none;
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid rgba(15, 118, 110, 0.14);
+}
+
+.nav-content {
+  width: min(1100px, 94vw);
+  margin: 0 auto;
+  padding: 14px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-content h1 {
+  margin: 0;
+  color: #0f766e;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #4b5563;
+  font-size: 0.92rem;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+}
+
+.btn-secondary {
+  background: #0f766e;
+  color: #fff;
+  padding: 9px 14px;
+}
+
+.main-content {
+  width: min(1100px, 94vw);
+  margin: 26px auto 30px;
+}
+
+.news-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.news-header h2 {
+  margin: 0;
+}
+
+.controls {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.controls label {
+  display: grid;
+  font-size: 0.82rem;
+  color: #4b5563;
+  gap: 3px;
+}
+
+.controls input {
+  width: 120px;
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.btn-refresh {
+  background: #0f766e;
+  color: #fff;
+  padding: 9px 14px;
+}
+
+.last-update {
+  width: 100%;
+  color: #4b5563;
+  font-size: 0.85rem;
+}
+
+.loading {
+  color: #4b5563;
+  padding: 12px 0;
+}
+
+.news-container {
+  display: grid;
+  gap: 12px;
+}
+
+.news-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.news-number {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #0f766e;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.news-content {
+  flex: 1;
+}
+
+.chip-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.chip {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #0f766e;
+  background: rgba(15, 118, 110, 0.1);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.news-title {
+  margin: 0;
+  font-size: 1.06rem;
+}
+
+.news-title a {
+  color: #111827;
+  text-decoration: none;
+}
+
+.news-title a:hover {
+  text-decoration: underline;
+}
+
+.news-description,
+.news-prompt {
+  margin: 8px 0 0;
+  color: #4b5563;
+}
+
+.news-meta {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.no-news {
+  color: #4b5563;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+@media (max-width: 700px) {
+  .nav-content,
+  .main-content {
+    width: 92vw;
+  }
+
+  .nav-content {
+    align-items: flex-start;
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .news-card {
+    flex-direction: column;
+  }
+
+  .controls {
+    width: 100%;
+  }
+
+  .controls input {
+    width: 100%;
+  }
+}
