@@ -325,6 +325,62 @@ body {
   color: #4b5563;
 }
 
+.story-actions {
+  margin-top: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dig-deeper {
+  font-size: 0.85rem;
+  color: #0f766e;
+}
+
+.dig-deeper summary {
+  cursor: pointer;
+  user-select: none;
+}
+
+.related-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #4b5563;
+}
+
+.related-list li {
+  margin-bottom: 4px;
+}
+
+.related-list a {
+  color: #1f2937;
+  text-decoration: none;
+}
+
+.related-list a:hover {
+  text-decoration: underline;
+}
+
+.related-source {
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+.mute-btn {
+  border: 1px solid rgba(185, 28, 28, 0.35);
+  background: rgba(254, 226, 226, 0.6);
+  color: #991b1b;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.mute-btn:hover {
+  background: rgba(254, 202, 202, 0.8);
+}
+
 .score-toggle {
   margin-top: 10px;
   color: #0f766e;

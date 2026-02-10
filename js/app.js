@@ -29,6 +29,7 @@ const state = {
     tone: "neutral",
     enabledCategories: [],
     enabledFeedIds: feeds.map((feed) => feed.id),
+    mutedTopicIds: [],
   },
 };
 
@@ -75,6 +76,9 @@ async function loadUserPreferences(userId) {
     const enabledFeedIds = Array.isArray(prefs.enabledFeedIds)
       ? prefs.enabledFeedIds.filter((id) => feeds.some((feed) => feed.id === id))
       : state.prefs.enabledFeedIds;
+    const mutedTopicIds = Array.isArray(prefs.mutedTopicIds)
+      ? prefs.mutedTopicIds.map((id) => String(id)).filter(Boolean)
+      : [];
 
     state.prefs = {
       ...state.prefs,
@@ -84,6 +88,7 @@ async function loadUserPreferences(userId) {
       // Categories default to "all off" on each load; toggles are session-level.
       enabledCategories: [],
       enabledFeedIds: enabledFeedIds.length > 0 ? enabledFeedIds : feeds.map((feed) => feed.id),
+      mutedTopicIds,
     };
   } catch (error) {
     // Continue with defaults if prefs cannot load.
@@ -104,6 +109,7 @@ function scheduleSavePreferences() {
             lookbackHours: state.prefs.lookbackHours,
             tone: state.prefs.tone,
             enabledFeedIds: state.prefs.enabledFeedIds,
+            mutedTopicIds: state.prefs.mutedTopicIds,
           },
           preferencesUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         },
@@ -147,6 +153,7 @@ function attachHandlers() {
   const settingsPanel = document.getElementById("settings-panel");
   const categoryFilters = document.getElementById("category-filters");
   const sourceFilters = document.getElementById("source-filters");
+  const newsContainer = document.getElementById("news-container");
 
   if (signOutBtn) {
     signOutBtn.onclick = async () => {
@@ -226,6 +233,26 @@ function attachHandlers() {
     scheduleSavePreferences();
     loadBriefing(true);
   };
+
+  newsContainer.onclick = (event) => {
+    const rawTarget = event.target;
+    if (!(rawTarget instanceof Element)) {
+      return;
+    }
+    const muteButton = rawTarget.closest("[data-role='mute-topic']");
+    if (!(muteButton instanceof HTMLElement)) {
+      return;
+    }
+    const topicId = muteButton.dataset.topicId || "";
+    if (!topicId) {
+      return;
+    }
+    if (!state.prefs.mutedTopicIds.includes(topicId)) {
+      state.prefs.mutedTopicIds = [...state.prefs.mutedTopicIds, topicId];
+      scheduleSavePreferences();
+      applyCurrentView();
+    }
+  };
 }
 
 function renderUser(user) {
@@ -284,9 +311,12 @@ function applyCurrentView() {
   const filtered = state.lastPayload.topics
     .filter((topic) => {
       if (!hasCategoryFilters) {
-        return true;
+        return !state.prefs.mutedTopicIds.includes(topic.id);
       }
-      return topic.categories.some((category) => state.prefs.enabledCategories.includes(category));
+      return (
+        topic.categories.some((category) => state.prefs.enabledCategories.includes(category))
+        && !state.prefs.mutedTopicIds.includes(topic.id)
+      );
     })
     .slice(0, state.prefs.topCount)
     .map((topic) => ({
@@ -349,6 +379,7 @@ async function fetchFreshNews(lookbackHours, sourceSignature) {
     const rep = cluster.stories[0];
     const sources = [...cluster.sourceNames].slice(0, 4);
     return {
+      id: makeTopicId(rep.title, rep.link),
       title: rep.title,
       link: rep.link,
       categories: Array.from(cluster.categories).sort(),
@@ -364,6 +395,11 @@ async function fetchFreshNews(lookbackHours, sourceSignature) {
         recencyPoints: round2(cluster.recencyPoints),
       },
       sourceNames: sources,
+      relatedStories: cluster.stories.slice(0, 5).map((story) => ({
+        title: story.title,
+        link: story.link,
+        source: story.source || "Unknown",
+      })),
     };
   });
 
@@ -499,7 +535,7 @@ function makePrompt(title, tone) {
 function renderTopics(topics) {
   const container = document.getElementById("news-container");
   if (!topics || topics.length === 0) {
-    container.innerHTML = '<p class="no-news">No stories match your current filters.</p>';
+    container.innerHTML = '<p class="no-news">No stories match your current filters. Try clearing category filters or muted stories.</p>';
     return;
   }
 
@@ -514,6 +550,15 @@ function renderTopics(topics) {
           <h3 class="news-title"><a href="${escapeHtml(topic.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(topic.title)}</a></h3>
           <p class="news-description">Why it's hot: ${topic.mentions} related headlines across ${topic.sources} sources.</p>
           <p class="news-prompt">Prompt: ${escapeHtml(topic.prompt)}</p>
+          <div class="story-actions">
+            <details class="dig-deeper">
+              <summary>Dig deeper</summary>
+              <ul class="related-list">
+                ${(topic.relatedStories || []).map((story) => `<li><a href="${escapeHtml(story.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(story.title)}</a> <span class="related-source">(${escapeHtml(story.source)})</span></li>`).join("")}
+              </ul>
+            </details>
+            <button type="button" class="mute-btn" data-role="mute-topic" data-topic-id="${escapeHtml(topic.id)}">Mute</button>
+          </div>
           <details class="score-toggle">
             <summary>Why trending (score ${topic.score})</summary>
             <div class="score-panel">
@@ -535,6 +580,14 @@ function renderTopics(topics) {
 
 function round2(value) {
   return Math.round(value * 100) / 100;
+}
+
+function makeTopicId(title, link) {
+  const raw = `${String(title || "")} ${String(link || "")}`.toLowerCase();
+  return raw
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120);
 }
 
 function timeAgo(timestamp) {
