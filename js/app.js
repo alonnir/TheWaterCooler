@@ -1,13 +1,15 @@
 const CACHE_DOC = "latestWaterCooler";
 const CACHE_TTL_MS = 60 * 60 * 1000;
 const PREFS_SAVE_DEBOUNCE_MS = 600;
+const NEWS_API_BASE = "https://newsapi.org/v2";
+const NEWS_API_KEY = String(window.newsApiKey || "").trim();
 
 const stopwords = new Set([
   "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "is", "it", "of",
   "on", "or", "that", "the", "to", "was", "were", "with", "you", "your", "will", "this",
 ]);
 
-const feeds = [
+const baseFeeds = [
   { id: "news-top", category: "news", label: "Google Top News", url: "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en" },
   { id: "news-us", category: "news", label: "Google US News", url: "https://news.google.com/rss/headlines/section/geo/US?hl=en-US&gl=US&ceid=US:en" },
   { id: "politics", category: "politics", label: "Google Politics", url: "https://news.google.com/rss/search?q=US+politics&hl=en-US&gl=US&ceid=US:en" },
@@ -16,6 +18,32 @@ const feeds = [
   { id: "culture", category: "popular culture", label: "Google Pop Culture", url: "https://news.google.com/rss/search?q=celebrity+music+movies+viral&hl=en-US&gl=US&ceid=US:en" },
   { id: "weather", category: "weather", label: "Google Weather", url: "https://news.google.com/rss/search?q=weather+storm+forecast+climate&hl=en-US&gl=US&ceid=US:en" },
 ];
+
+const newsApiFeeds = NEWS_API_KEY ? [
+  {
+    id: "newsapi-us",
+    category: "news",
+    label: "NewsAPI US Top",
+    provider: "newsapi",
+    endpoint: `${NEWS_API_BASE}/top-headlines?country=us&pageSize=30&apiKey=${encodeURIComponent(NEWS_API_KEY)}`,
+  },
+  {
+    id: "newsapi-sports",
+    category: "sports",
+    label: "NewsAPI Sports",
+    provider: "newsapi",
+    endpoint: `${NEWS_API_BASE}/top-headlines?country=us&category=sports&pageSize=20&apiKey=${encodeURIComponent(NEWS_API_KEY)}`,
+  },
+  {
+    id: "newsapi-entertainment",
+    category: "popular culture",
+    label: "NewsAPI Entertainment",
+    provider: "newsapi",
+    endpoint: `${NEWS_API_BASE}/top-headlines?country=us&category=entertainment&pageSize=20&apiKey=${encodeURIComponent(NEWS_API_KEY)}`,
+  },
+] : [];
+
+const feeds = [...baseFeeds, ...newsApiFeeds];
 
 const categoryOrder = ["news", "politics", "tv", "sports", "popular culture", "weather"];
 
@@ -377,6 +405,10 @@ async function fetchFreshNews(lookbackHours, sourceSignature) {
 }
 
 async function fetchFeed(feed) {
+  if (feed.provider === "newsapi") {
+    return fetchNewsApiFeed(feed);
+  }
+
   const rss2jsonUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`;
   try {
     const response = await fetch(rss2jsonUrl);
@@ -396,6 +428,34 @@ async function fetchFeed(feed) {
         publishedAtMs: Number.isFinite(publishedMs) ? publishedMs : Date.now(),
       };
     }).filter((item) => item.title);
+    return { feed, items };
+  } catch (err) {
+    return { feed, error: err.message || "fetch failed" };
+  }
+}
+
+async function fetchNewsApiFeed(feed) {
+  try {
+    const response = await fetch(feed.endpoint);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    if (data.status !== "ok") {
+      throw new Error(data.message || "NewsAPI error");
+    }
+    const items = (data.articles || []).slice(0, 30).map((item) => {
+      const publishedMs = Date.parse(item.publishedAt || "");
+      return {
+        title: (item.title || "").trim(),
+        link: item.url || "",
+        source: (item.source?.name || feed.label || "Unknown").trim(),
+        category: feed.category,
+        feedId: feed.id,
+        published: item.publishedAt || new Date().toISOString(),
+        publishedAtMs: Number.isFinite(publishedMs) ? publishedMs : Date.now(),
+      };
+    }).filter((item) => item.title && item.link);
     return { feed, items };
   } catch (err) {
     return { feed, error: err.message || "fetch failed" };
